@@ -1,0 +1,330 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "existingVNETName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the VNET to add a subnet to"
+      }
+    },
+    "webSubnetName": {
+      "type": "string",
+      "defaultValue": "Web-Subnet",
+      "metadata": {
+        "description": "Name of the Web subnet to add"
+      }
+    },
+    "WebSubnetAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Address space of the Web subnet to add"
+      }
+    },
+     "AppSubnetName": {
+      "type": "string",
+      "defaultValue": "App-Subnet",
+      "metadata": {
+        "description": "Name of the Application subnet to add"
+      }
+    },
+    "AppSubnetAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Address space of the Application subnet to add"
+      }
+    },
+      "DBSubnetName": {
+      "type": "string",
+      "defaultValue": "DB-Subnet",
+      "metadata": {
+        "description": "Name of the Database subnet to add"
+      }
+    },
+    "DBSubnetAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Address space of the Database subnet to add"
+      }
+    },
+    "WebNSGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Address space of the Database subnet to add"
+      }
+    },
+    "AppNSGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Address space of the Database subnet to add"
+      }
+    },
+    "DBNSGName": {
+      "type": "string",
+      "metadata": {
+        "description": "Address space of the Database subnet to add"
+      }
+    },
+      "Resource Role": {
+      "type": "string"
+    },
+    "Resource Class": {
+      "type": "string"
+    },
+     "Cost Center": {
+      "type": "string"
+    },
+    "Cost Perspective": {
+      "type": "string"
+    },
+    "Primary Contact Email": {
+      "type": "string"
+    },
+    "Time Zone": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "apiVersion": "2015-06-15"
+  },
+  "resources": [
+      {
+        "apiVersion": "2015-06-15",
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "name": "[parameters('WebNSGName')]",
+        "location": "[resourceGroup().location]",
+        "tags": {
+        "Resource Role": "[parameters('Resource Role')]",
+        "Resource Class": "[parameters('Resource Class')]",
+        "Cost Center": "[parameters('Cost Center')]",
+        "Cost Perspective": "[parameters('Cost Perspective')]",
+        "Primary Contact Email": "[parameters('Primary Contact Email')]",
+        "Time Zone": "[parameters('Time Zone')]"
+         },
+        "properties": {
+            "securityRules": 
+            [
+             {
+                "name": "Http-rule",
+                "properties": 
+                {
+                    "description": "Allow Http",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "80",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 100,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "Https-rule",
+                "properties": 
+                {
+                    "description": "Allow Https",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "443",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 110,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "Service-Map",
+                "properties": 
+                {
+                    "description": "Allow ServiceMap",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "32526",
+                    "sourceAddressPrefix": "168.63.129.16/32",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 120,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "App-Subnet",
+                "properties": 
+                {
+                    "description": "Allow App Subnet Traffic",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "*",
+                    "sourceAddressPrefix": "[parameters('WebSubnetAddressPrefix')]",
+                    "destinationAddressPrefix": "[parameters('AppSubnetAddressPrefix')]",
+                    "access": "Allow",
+                    "priority": 100,
+                    "direction": "Outbound"
+                }
+            }
+          ]
+        }
+      },
+      {
+        "apiVersion": "2015-06-15",
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "name": "[parameters('AppNSGName')]",
+        "location": "[resourceGroup().location]",
+        "tags": {
+        "Resource Role": "[parameters('Resource Role')]",
+        "Resource Class": "[parameters('Resource Class')]",
+        "Cost Center": "[parameters('Cost Center')]",
+        "Cost Perspective": "[parameters('Cost Perspective')]",
+        "Primary Contact Email": "[parameters('Primary Contact Email')]",
+        "Time Zone": "[parameters('Time Zone')]"
+         },
+        "properties": {
+            "securityRules": 
+            [
+             {
+                "name": "WebIn-rule",
+                "properties": 
+                {
+                    "description": "Allow Web Subnet",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "*",
+                    "sourceAddressPrefix": "[parameters('WebSubnetAddressPrefix')]",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 100,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "Service-Map",
+                "properties": 
+                {
+                    "description": "Allow ServiceMap",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "32526",
+                    "sourceAddressPrefix": "168.63.129.16/32",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 110,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "DB-Subnet",
+                "properties": 
+                {
+                    "description": "Allow App Subnet Traffic",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "*",
+                    "sourceAddressPrefix": "[parameters('AppSubnetAddressPrefix')]",
+                    "destinationAddressPrefix": "[parameters('DBSubnetAddressPrefix')]",
+                    "access": "Allow",
+                    "priority": 100,
+                    "direction": "Outbound"
+                }
+            }
+          ]
+        }
+      },
+    {
+        "apiVersion": "2015-06-15",
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "name": "[parameters('DBNSGName')]",
+        "location": "[resourceGroup().location]",
+        "tags": {
+        "Resource Role": "[parameters('Resource Role')]",
+        "Resource Class": "[parameters('Resource Class')]",
+        "Cost Center": "[parameters('Cost Center')]",
+        "Cost Perspective": "[parameters('Cost Perspective')]",
+        "Primary Contact Email": "[parameters('Primary Contact Email')]",
+        "Time Zone": "[parameters('Time Zone')]"
+         },
+        "properties": {
+            "securityRules": 
+            [
+             {
+                "name": "AppIn-rule",
+                "properties": 
+                {
+                    "description": "Allow Web Subnet",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "1433",
+                    "sourceAddressPrefix": "[parameters('AppSubnetAddressPrefix')]",
+                    "destinationAddressPrefix": "[parameters('DBSubnetAddressPrefix')]",
+                    "access": "Allow",
+                    "priority": 100,
+                    "direction": "Inbound"
+                }
+            },
+            {
+                "name": "Service-Map",
+                "properties": 
+                {
+                    "description": "Allow ServiceMap",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "32526",
+                    "sourceAddressPrefix": "168.63.129.16/32",
+                    "destinationAddressPrefix": "[parameters('DBSubnetAddressPrefix')]",
+                    "access": "Allow",
+                    "priority": 110,
+                    "direction": "Inbound"
+                }
+            }
+          ]
+        }
+      },
+{
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "[concat(parameters('existingVNETName'), '/', parameters('webSubnetName'))]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', parameters('WebNSGName'))]"
+      ],
+      "properties": {
+        "addressPrefix": "[parameters('WebSubnetAddressPrefix')]",
+        "networkSecurityGroup": {
+      "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('WebNSGName'))]"
+      }
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "[concat(parameters('existingVNETName'), '/', parameters('AppSubnetName'))]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', parameters('AppNSGName'))]"
+      ],
+      "properties": {
+        "addressPrefix": "[parameters('AppSubnetAddressPrefix')]",
+        "networkSecurityGroup": {
+      "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('AppNSGName'))]"
+      }
+      }
+    },
+    {
+      "apiVersion": "[variables('apiVersion')]",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "[concat(parameters('existingVNETName'), '/', parameters('DBSubnetName'))]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', parameters('DBNSGName'))]"
+      ],
+      "properties": {
+        "addressPrefix": "[parameters('DBSubnetAddressPrefix')]",
+        "networkSecurityGroup": {
+      "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('DBNSGName'))]"
+      }
+      }
+    }
+  ],
+  "outputs": {}
+}
